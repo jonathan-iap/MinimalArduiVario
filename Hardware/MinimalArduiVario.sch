@@ -248,9 +248,9 @@ F 3 "" H 10725 6150 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 Text GLabel 3100 5000 2    50   Input ~ 0
-BTN1
+BTN_SELECT-A3
 Text GLabel 3100 4800 2    50   Input ~ 0
-BTN2
+BTN_UP-A1
 Text GLabel 4700 2875 0    50   Output ~ 0
 BTN1
 Text GLabel 4700 3300 0    50   Output ~ 0
@@ -309,9 +309,9 @@ Capteur
 Text Notes 650  1875 0    60   ~ 0
 Press ON - Hold OFF \nLatching circuit\n
 Text GLabel 3100 4700 2    50   Output ~ 0
-LED-GREEN
+LED-G_A0
 Text GLabel 3100 4350 2    50   BiDi ~ 0
-SCK-RED
+SCK/LED-R-13
 $Comp
 L C C7
 U 1 1 58F1C9CA
@@ -1040,5 +1040,5 @@ F 3 "" H 4825 6800 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 Text GLabel 3100 4900 2    50   Input ~ 0
-BTN3
+BTN_DOWN-A2
 $EndSCHEMATC
