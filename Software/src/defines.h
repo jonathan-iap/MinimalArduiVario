@@ -2,7 +2,7 @@
 #define Define_h
 
 // Mémoire EEprom.
-#define MEM_VOLUME  0 
+#define MEM_VOLUME  0
 #define MEM_SENS    1
 #define MEM_FALL    2
 
@@ -23,28 +23,20 @@
 
 // Constantes pour la fonction "vario" - valeurs.
 #define SOUND_RISE 600  // Bip de monté.
-#define SOUND_FALL 400  // Bip de descente. 
+#define SOUND_FALL 400  // Bip de descente.
 
 // Constantes pour la fonction "switchBouton" - valeurs.
-# define STEP_SENS  10  //augmentation par pas de x...
-# define STEP_VOL   4
-
-// Buzzer - pins.
-#define BUZZER    10
+#define STEP_SENS 10  //augmentation par pas de x...
+#define STEP_VOL  1
+#define DEBOUNCE  10
 
 // Boutons - pins.
-#define SELECT    0
-#define UP        1
-#define DOWN      2
+#define BTN_UP        A1
+#define BTN_DOWN      A2
+#define BTN_SELECT    A3
 
 // Leds - pins.
-#define LED       3
-#define LED_ERROR 13
-
-
-// MCP4017 - adresse.
-#define MCP4017 0x2E
-
-
+#define LED_GOOD  A0 // Green
+#define LED_ERROR 13 // Red
 
 #endif

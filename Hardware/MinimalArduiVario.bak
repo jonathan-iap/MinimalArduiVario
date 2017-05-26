@@ -37,12 +37,12 @@ encoding utf-8
 Sheet 1 1
 Title "MinimalArduiVario"
 Date "2017-05-07"
-Rev "V2.0"
+Rev "v2.0"
 Comp "Jonathan IAPICCO "
-Comment1 ""
+Comment1 "Variomètre sur base Arduino"
 Comment2 ""
-Comment3 "- Amélioration du son"
-Comment4 "Variomètre, base software arduino."
+Comment3 ""
+Comment4 ""
 $EndDescr
 $Comp
 L C C3
@@ -248,9 +248,9 @@ F 3 "" H 10725 6150 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 Text GLabel 3100 5000 2    50   Input ~ 0
-BTN1
+BTN_SELECT-A3
 Text GLabel 3100 4800 2    50   Input ~ 0
-BTN2
+BTN_UP-A1
 Text GLabel 4700 2875 0    50   Output ~ 0
 BTN1
 Text GLabel 4700 3300 0    50   Output ~ 0
@@ -309,7 +309,7 @@ Capteur
 Text Notes 650  1875 0    60   ~ 0
 Press ON - Hold OFF \nLatching circuit\n
 Text GLabel 3100 4700 2    50   Output ~ 0
-LED-GREEN
+LED-GREEN_A0
 Text GLabel 3100 4350 2    50   BiDi ~ 0
 SCK-RED
 $Comp
@@ -1040,5 +1040,5 @@ F 3 "" H 4825 6800 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 Text GLabel 3100 4900 2    50   Input ~ 0
-BTN3
+BTN_DOWN-A2
 $EndSCHEMATC
