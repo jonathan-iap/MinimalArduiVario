@@ -25,7 +25,7 @@ void setTimer();
 
 void toneOn(uint16_t frequency);
 void toneOn(uint16_t frequency,  uint8_t volume);
-void toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop);
+bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop);
 void volumeUpdate(uint8_t volume);
 void toneOff();
 

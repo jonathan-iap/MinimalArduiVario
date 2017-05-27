@@ -11,10 +11,6 @@
 #define MIN_SENS    10   // Seuil mini déclenchement en monté
 #define MIN_FALL    -30  // Seuil déclenchement en descente
 
-// Volume - valeurs.
-#define MAX_VOLUME  20
-#define MIN_VOLUME  0
-
 // Constantes pour la fonction "check" - valeurs.
 #define DELAY_TRUE 100    // Durée d'activation du bip et led "check".
 #define FREQ_TRUE 1500    // Fréquence pour le son du bip "check".
@@ -30,7 +26,11 @@
 #define STEP_VOL  1
 #define DEBOUNCE  10
 
-// Boutons - pins.
+// Tone frequency
+#define TONE_LIMIT    4500 // approximately resonance frequency of buzzer
+#define TONE_CONFIRM  2500
+
+// Buttons - pins.
 #define BTN_UP        A1
 #define BTN_DOWN      A2
 #define BTN_SELECT    A3
