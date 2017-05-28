@@ -1,16 +1,19 @@
 /*
 * Frequency range : 1Hz to 30KHz
-* Accuracy decrease : around 10KHz
+* Range depend to PWM freq
+* Pins are fix, you need to use pin 10 and 9 on ATmega 168 an 328.
 *
 * Created on: 22 avr. 2017
 *     Author: Jonathan Iapicco
 */
 
-#include "NewToneAC.h"
+#include "CustomToneAC.h"
 #include <avr/io.h>
 
 // Convert the frequency into a value for setting timer1
 #define FREQ_TO_ISR(freq) ((F_CPU / (T1_PRESCALER * (PWM_FREQ + 1))) / (2 * (freq)) -1)
+// Give the time to make one periode at the pwm frequency
+#define PWM_FREQ_TO_TIME (1000.0 / (F_CPU / (T1_PRESCALER * (PWM_FREQ + 1.0))))
 
 volatile bool _toneFlipFlop = true; // Switch port output
 volatile uint16_t _toneISR = 0; // Divide timer to create audible frequency
@@ -83,7 +86,7 @@ void toneOn(uint16_t frequency,  uint8_t volume)
 *-----------------------------------------------------------------------------
 * frequency in Hertz : 1 -> 30000 Hz
 * volume : 0 -> 10
-* length in Milliseconde : 0 -> 4294967296 ms
+* length in Milliseconde : 0 -> 214748364 ms
 *****************************************************************************/
 bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop)
 {
@@ -106,11 +109,11 @@ bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop)
       _toneISR = FREQ_TO_ISR(frequency); // Set tone frequency
       setTimer(); // Start timer routine
 
-      lengthMillis = length/0.05; // 0.05 is for 200KHz convert into milliseconde
+      lengthMillis = millis() + length; // set time
 
       if(!openLoop) // Blocking loop stop program
       {
-        while(_counterTime <= lengthMillis)
+        while(millis() < lengthMillis) // do nothing untils time isn't reached.
         {}
 
           toneOff();
@@ -118,7 +121,7 @@ bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop)
           return true;
         }
       }
-      else if(_counterTime >= lengthMillis) // Open loop, program can continue
+      else if(millis() > lengthMillis) // Open loop, program can continue
       {
         toneOff();
         _isFirstCall = true;
@@ -214,7 +217,7 @@ bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop)
     TCCR1A |= (1 << COM1A1);  // Turn ON PWM on OC1B pin 9
     TCCR1A &= ~(1 << COM1B1); // Turn OFF PWM on OC1B pin 10
     _toneFlipFlop = true;     // Set counter
-    _counterISR = 0;          //
+    _counterISR = _toneISR;          //
     _counterTime = 0;
     // Enable ISR
     TIMSK1 |= (1 << TOIE1);
@@ -230,7 +233,7 @@ bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop)
   *****************************************************************************/
   ISR(TIMER1_OVF_vect)
   {
-    if(_counterISR == _toneISR)
+    if(_counterISR == 0)
     {
       if(_toneFlipFlop)
       {
@@ -244,9 +247,7 @@ bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop)
         TCCR1A &= ~(1 << COM1B1); // Turn OFF PWM on OC1B pin 10
         _toneFlipFlop = true;
       }
-      _counterISR=0;
+      _counterISR = _toneISR;
     }
-    else _counterISR++;
-
-    _counterTime++;
+    else _counterISR--;
   }

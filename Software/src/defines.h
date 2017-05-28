@@ -27,8 +27,8 @@
 #define DEBOUNCE  10
 
 // Tone frequency
-#define TONE_LIMIT    4500 // approximately resonance frequency of buzzer
-#define TONE_CONFIRM  2500
+#define TONE_LIMIT    3400 // approximately resonance frequency of buzzer
+#define TONE_CONFIRM  1100
 
 // Buttons - pins.
 #define BTN_UP        A1
