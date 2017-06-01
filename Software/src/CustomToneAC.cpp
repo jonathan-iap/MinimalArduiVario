@@ -18,7 +18,6 @@
 volatile bool _toneFlipFlop = true; // Switch port output
 volatile uint16_t _toneISR = 0; // Divide timer to create audible frequency
 volatile uint16_t _counterISR = 0; // Counter for toneISR
-volatile uint32_t _counterTime = 0; // Counter for play tone during a specified period
 bool _isFirstCall = true;
 
 
@@ -202,7 +201,7 @@ bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop)
     //------------------------------------------
     noInterrupts(); // Disable interrupts
 
-    // Clear register of timer 1
+    // Clear register
     TCCR1A = 0;
     TCCR1B = 0;
     TCCR1C = 0;
@@ -211,14 +210,13 @@ bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop)
     TCCR1B |= (1 << WGM13) | (1 << WGM12);
     // Prescaler : x1
     TCCR1B |= (1 << CS10);
-    // TOP frequency : 200Khz
+    // TOP frequency
     ICR1 = PWM_FREQ;
     // First use :
     TCCR1A |= (1 << COM1A1);  // Turn ON PWM on OC1B pin 9
     TCCR1A &= ~(1 << COM1B1); // Turn OFF PWM on OC1B pin 10
     _toneFlipFlop = true;     // Set counter
     _counterISR = _toneISR;          //
-    _counterTime = 0;
     // Enable ISR
     TIMSK1 |= (1 << TOIE1);
 
@@ -233,6 +231,8 @@ bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop)
   *****************************************************************************/
   ISR(TIMER1_OVF_vect)
   {
+    // noInterrupts();
+
     if(_counterISR == 0)
     {
       if(_toneFlipFlop)
@@ -250,4 +250,6 @@ bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop)
       _counterISR = _toneISR;
     }
     else _counterISR--;
+
+    // interrupts();
   }

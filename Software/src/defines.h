@@ -2,9 +2,9 @@
 #define Define_h
 
 // Mémoire EEprom.
-#define MEM_VOLUME  0
-#define MEM_SENS    1
-#define MEM_FALL    2
+#define MEM_VOLUME  10
+#define MEM_SENS    11
+#define MEM_FALL    12
 
 // Sensibilité - valeurs.
 #define MAX_SENS    40   // Seuil maxi déclenchement en monté
@@ -12,10 +12,10 @@
 #define MIN_FALL    -30  // Seuil déclenchement en descente
 
 // Constantes pour la fonction "check" - valeurs.
-#define DELAY_TRUE 100    // Durée d'activation du bip et led "check".
-#define FREQ_TRUE 1500    // Fréquence pour le son du bip "check".
+#define DELAY_TRUE  100    // Durée d'activation du bip et led "check".
+#define FREQ_TRUE   1500    // Fréquence pour le son du bip "check".
 #define DELAY_FALSE 500
-#define FREQ_FALSE 800
+#define FREQ_FALSE  800
 
 // Constantes pour la fonction "vario" - valeurs.
 #define SOUND_RISE 600  // Bip de monté.
@@ -23,11 +23,10 @@
 
 // Constantes pour la fonction "switchBouton" - valeurs.
 #define STEP_SENS 10  //augmentation par pas de x...
-#define STEP_VOL  1
-#define DEBOUNCE  10
+#define DEBOUNCE  200
 
 // Tone frequency
-#define TONE_LIMIT    3400 // approximately resonance frequency of buzzer
+#define TONE_LIMIT    1400 // approximately resonance frequency of buzzer
 #define TONE_CONFIRM  1100
 
 // Buttons - pins.

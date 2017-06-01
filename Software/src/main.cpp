@@ -15,28 +15,30 @@
 // Global variables -----------------------------------------------------------
 uint8_t buttons[]={BTN_UP, BTN_DOWN, BTN_SELECT};
 uint8_t volume;
-uint16_t sensibility;
+int8_t sensibility;
 bool falling;
 unsigned long time = 0;
-
+unsigned long timeTest = 0;
 // Global object --------------------------------------------------------------
 Adafruit_BMP085_Unified BMP180 = Adafruit_BMP085_Unified(10085);
 
 // Functions declaration-------------------------------------------------------
 // Init and checking
 bool isLimit();
-bool isConfirm(uint8_t _volume);
+bool isConfirm(uint8_t _volume, uint16_t _tone);
 void initEeprom();
 void readEeprom();
 void CtrlSensor();
 void displaySensorDetails();
 // Engine function
 void vario();
-void bipSound(float toneFreq, int p_ddsAcc);
+void bipSound(int16_t toneFreq, int p_ddsAcc);
 // settings
 uint8_t getButtons();
 void setVolume(uint8_t _button);
-
+void setSensibility(uint8_t _button);
+void setMode();
+void menuSetting(uint8_t _button);
 
 /******************************************************************************
 SETUP
@@ -52,14 +54,12 @@ void setup()
   pinMode(BTN_UP, INPUT_PULLUP);
   pinMode(BTN_DOWN, INPUT_PULLUP);
   pinMode(BTN_SELECT, INPUT_PULLUP);
-  // i2C
-  Wire.setClock(400000); // change i2c speed to 400Khz
   // Load settings
   initEeprom();
   // Initialization and check of the pressure sensor
   CtrlSensor();
-
-  volume = 1;
+  // i2C
+  Wire.setClock(400000L); // change i2c speed to 400Khz (need to be placed after "wire.begin")
 }
 
 /******************************************************************************
@@ -70,15 +70,9 @@ void loop()
   // Fonction principal.
   vario();
 
-  while(millis()<time){}
-  time += 20;
+  delay(20);
 
-  // digitalWrite(LED_ERROR, HIGH);
-  // digitalWrite(LED_GOOD, LOW);
-  // delay(200);
-  // digitalWrite(LED_ERROR, LOW);
-  // digitalWrite(LED_GOOD, HIGH);
-  // delay(200);
+  menuSetting(getButtons());
 }
 
 /******************************************************************************
@@ -91,20 +85,20 @@ bool isLimit()
   digitalWrite(LED_GOOD, LOW);
 
   digitalWrite(LED_ERROR, HIGH);
-  toneOn(TONE_LIMIT, VOL_MAX, 1000, LOW);
+  toneOn(TONE_LIMIT, VOL_MAX, 500, LOW);
   digitalWrite(LED_ERROR, LOW);
 
   return true;
 }
 
 // Confirm if a setting is changed
-bool isConfirm(uint8_t _volume)
+bool isConfirm(uint8_t _volume, uint16_t _tone)
 {
   toneOff();
   digitalWrite(LED_ERROR, LOW);
 
   digitalWrite(LED_GOOD, HIGH);
-  toneOn(TONE_CONFIRM, _volume, 200, LOW);
+  toneOn(_tone, _volume, 200, LOW);
   digitalWrite(LED_GOOD, LOW);
 
   return true;
@@ -144,25 +138,31 @@ void readEeprom()
 void CtrlSensor()
 {
   // To say that the your device is running
-  isConfirm(1); /* rechange for VOL_MAX /!\*/
+  isConfirm(VOL_MAX, TONE_CONFIRM); /* rechange for VOL_MAX /!\*/
   Serial.print("Vario is on : ");
   delay(50);
 
   // Initialization of pressure sensor
-  bool state = BMP180.begin(BMP085_MODE_STANDARD);
+  bool state = BMP180.begin(BMP085_MODE_ULTRALOWPOWER);
 
   // Control routine
   // Error : Led error stays on, sensor is probably dead or power is not correct.
   if (!state)
   {
     isLimit();
-    Serial.print("ERROR -> No detected sensor... Check your wiring or I2C ADDR!");
-    while (1) digitalWrite(LED_ERROR, HIGH);
+    delay(100);
+    isLimit();
+    digitalWrite(LED_ERROR, HIGH);
+
+    Serial.println("ERROR -> No detected sensor !");
+    Serial.println("Please Check your I2C ADDR, your power and your wires");
+
+    while (1){} // Stop program
   }
   // OK : if sensor is correctly initialise led green and buzzer are plays
   else
   {
-    isConfirm(1); /* rechange for VOL_MAX /!\*/
+    isConfirm(VOL_MAX, TONE_CONFIRM); /* rechange for VOL_MAX /!\*/
     displaySensorDetails();
   }
 }
@@ -193,34 +193,69 @@ void displaySensorDetails(void)
 void vario()
 {
   static int ddsAcc;
-  static float toneFreq, toneFreqLowpass, lowPassFast, lowPassSlow, pressure;
+  static float pressure = 0;
+  // DEBUG
+  // timeTest = micros();
 
   // Lecture de la valeur de pression du capteur BMP180.
   BMP180.getPressure(&pressure);
 
+  static float lowPassFast = pressure;
+  static float lowPassSlow = pressure;
+  static float toneFreq = 10.00;
+  static float toneFreqLowpass;
+
+  // DEBUG
+  // timeTest = (micros() - timeTest);
+  //  Serial.print("Millis pressure : ");
+  //  Serial.println(timeTest);
+  //  Serial.println("");
+  // Serial.println("-----------------------------");
+  // Serial.print("pressure: "); Serial.println(pressure,4);
+
   // Filtrage de la valeur sur deux niveaux.
-  lowPassFast = lowPassFast + (pressure - lowPassFast) * 0.2;
-  lowPassSlow = lowPassSlow + (pressure - lowPassSlow) * 0.1;
+  lowPassFast = lowPassFast + (pressure - lowPassFast) * 0.1;
+  lowPassSlow = lowPassSlow + (pressure - lowPassSlow) * 0.05;
+
+  // DEBUG
+  // Serial.print("lowPassFast : "); Serial.println(lowPassFast,4);
+  // Serial.print("lowPassSlow : "); Serial.println(lowPassSlow,4);
 
   // On fait la différence des deux valeurs et on lui donne plus de poid.
   toneFreq = (lowPassSlow - lowPassFast) * 50;
 
+  // DEBUG
+  // Serial.print("toneFreq: "); Serial.println(toneFreq,4);
+
   // Filtrage de la nouvelle valeur.
   toneFreqLowpass = toneFreqLowpass + (toneFreq - toneFreqLowpass) * 0.1;
 
+  // DEBUG
+  // Serial.print("toneFreqLowpass: "); Serial.println(toneFreqLowpass,4);
+
   // La valeur est contrainte sur une plage en cas de forte variation.
-  toneFreq = constrain(toneFreqLowpass, -500, 500);
+  toneFreq = constrain(toneFreqLowpass, -300, 500);
+
+  // DEBUG
+  // Serial.print("toneFreq: "); Serial.println(toneFreq,4);
 
   // "ddsAcc" donne une valeur qui permetra d'interrompre le son quelque instant pour faire un bip-bip-bip....
   ddsAcc += toneFreq * 100 + 2000;
 
+  // DEBUG
+  // Serial.print("ddsAcc: "); Serial.println(ddsAcc);
+
+  // Play tone depending variation.
   bipSound(toneFreq, ddsAcc);
 }
 
 
 /* Fonction qui gère le son de monté ou de descente. */
-void bipSound(float toneFreq, int ddsAcc)
+void bipSound(int16_t toneFreq, int ddsAcc)
 {
+  // DEBUG
+  //Serial.print("toneFreq: "); Serial.println(toneFreq);
+
   // Si on descend ou si on reste à une même altitude.
   if (toneFreq < sensibility || ddsAcc > 0)
   {
@@ -250,12 +285,14 @@ void bipSound(float toneFreq, int ddsAcc)
   else
   {
     // Descente activé.
-    if (falling == true) {
+    if (falling == true)
+    {
       toneOff();
       digitalWrite(LED_GOOD, LOW);
     }
     // Descente désactivé bip de monté.
-    else {
+    else
+    {
       toneOn(toneFreq + SOUND_RISE, volume);
       digitalWrite(LED_GOOD, HIGH);
     }
@@ -281,12 +318,14 @@ uint8_t getButtons()
 
 void setVolume(uint8_t _button)
 {
+  uint8_t lastVolume = volume;
+
   if(_button == BTN_UP)
   {
     if(volume < VOL_MAX)
     {
       volumeUpdate(volume++);
-      isConfirm(volume);
+      isConfirm(volume, TONE_CONFIRM);
     }
     else isLimit();
   }
@@ -295,8 +334,77 @@ void setVolume(uint8_t _button)
     if(volume > VOL_MIN)
     {
       volumeUpdate(volume--);
-      isConfirm(volume);
+      isConfirm(volume, TONE_CONFIRM);
     }
     else isLimit();
+  }
+
+  if(sensibility != lastVolume) EEPROM.write(MEM_VOLUME, volume);
+}
+
+
+void setSensibility(uint8_t _button)
+{
+  uint8_t lastSensibility = sensibility;
+
+  if(_button == (BTN_SELECT+BTN_UP))
+  {
+    if(sensibility < MAX_SENS)
+    {
+      sensibility += STEP_SENS;
+      for(uint8_t i ; i<sensibility; i+=STEP_SENS)
+      {
+        isConfirm(VOL_MAX, TONE_CONFIRM+200);
+        delay(50);
+      }
+    }
+    else isLimit();
+  }
+  else if(_button == (BTN_SELECT+BTN_DOWN))
+  {
+    if(sensibility > MIN_SENS)
+    {
+      sensibility -= STEP_SENS;
+      for(uint8_t i ; i<sensibility; i+=STEP_SENS)
+      {
+        isConfirm(VOL_MAX, TONE_CONFIRM+200);
+        delay(50);
+      }
+    }
+    else isLimit();
+  }
+
+  if(sensibility != lastSensibility) EEPROM.write(MEM_SENS, sensibility);
+}
+
+
+void setMode()
+{
+  falling =! falling;
+
+  EEPROM.write(MEM_FALL, falling);
+
+  isConfirm(VOL_MAX, TONE_CONFIRM-200);
+  delay(2);
+  isConfirm(VOL_MAX, TONE_CONFIRM-200);
+}
+
+
+void menuSetting(uint8_t _button)
+{
+  if(_button == BTN_SELECT || _button == (BTN_SELECT+BTN_UP) || _button == (BTN_SELECT+BTN_DOWN))
+  {
+    while((_button = getButtons()) == BTN_SELECT ){}
+
+    if(_button == (BTN_SELECT+BTN_UP) || _button == (BTN_SELECT+BTN_DOWN))
+    {
+      setSensibility(_button);
+      delay(DEBOUNCE+300);
+    }
+    else setMode();
+  }
+  else
+  {
+    setVolume(_button);
   }
 }
