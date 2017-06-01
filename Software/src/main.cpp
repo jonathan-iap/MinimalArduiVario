@@ -193,29 +193,31 @@ void displaySensorDetails(void)
 void vario()
 {
   static int ddsAcc;
-  static float pressure = 0;
+  static float pressure, toneFreq, toneFreqLowpass;
+
   // DEBUG
   // timeTest = micros();
 
   // Lecture de la valeur de pression du capteur BMP180.
   BMP180.getPressure(&pressure);
 
-  static float lowPassFast = pressure;
-  static float lowPassSlow = pressure;
-  static float toneFreq = 10.00;
-  static float toneFreqLowpass;
-
   // DEBUG
   // timeTest = (micros() - timeTest);
   //  Serial.print("Millis pressure : ");
   //  Serial.println(timeTest);
   //  Serial.println("");
+
+  // For fast Initialization
+  static float lowPassFast = pressure;
+  static float lowPassSlow = pressure;
+
+  // DEBUG
   // Serial.println("-----------------------------");
   // Serial.print("pressure: "); Serial.println(pressure,4);
 
   // Filtrage de la valeur sur deux niveaux.
   lowPassFast = lowPassFast + (pressure - lowPassFast) * 0.1;
-  lowPassSlow = lowPassSlow + (pressure - lowPassSlow) * 0.05;
+  lowPassSlow = lowPassSlow + (pressure - lowPassSlow) * 0.07;
 
   // DEBUG
   // Serial.print("lowPassFast : "); Serial.println(lowPassFast,4);
@@ -228,13 +230,13 @@ void vario()
   // Serial.print("toneFreq: "); Serial.println(toneFreq,4);
 
   // Filtrage de la nouvelle valeur.
-  toneFreqLowpass = toneFreqLowpass + (toneFreq - toneFreqLowpass) * 0.1;
+  toneFreqLowpass = toneFreqLowpass + (toneFreq - toneFreqLowpass) * 0.12;
 
   // DEBUG
   // Serial.print("toneFreqLowpass: "); Serial.println(toneFreqLowpass,4);
 
   // La valeur est contrainte sur une plage en cas de forte variation.
-  toneFreq = constrain(toneFreqLowpass, -300, 500);
+  toneFreq = constrain(toneFreqLowpass, -400, 500);
 
   // DEBUG
   // Serial.print("toneFreq: "); Serial.println(toneFreq,4);
@@ -399,7 +401,7 @@ void menuSetting(uint8_t _button)
     if(_button == (BTN_SELECT+BTN_UP) || _button == (BTN_SELECT+BTN_DOWN))
     {
       setSensibility(_button);
-      delay(DEBOUNCE+300);
+      delay(DEBOUNCE+400);
     }
     else setMode();
   }

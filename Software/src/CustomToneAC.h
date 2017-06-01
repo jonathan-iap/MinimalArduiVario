@@ -19,8 +19,8 @@
 #define PWM_FREQ 131 // Around 50KHz
 #endif
 
-// #define VOL_MAX 10
-#define VOL_MAX 1 // for DEBUG sound not work with this setup 
+ #define VOL_MAX 10
+//#define VOL_MAX 1 // for DEBUG sound not work with this setup
 #define VOL_MIN 1
 
 // Private functions

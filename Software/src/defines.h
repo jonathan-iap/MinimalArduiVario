@@ -18,7 +18,7 @@
 #define FREQ_FALSE  800
 
 // Constantes pour la fonction "vario" - valeurs.
-#define SOUND_RISE 600  // Bip de monté.
+#define SOUND_RISE 500  // Bip de monté.
 #define SOUND_FALL 400  // Bip de descente.
 
 // Constantes pour la fonction "switchBouton" - valeurs.
