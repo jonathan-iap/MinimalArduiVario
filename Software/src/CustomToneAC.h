@@ -14,13 +14,13 @@
 
 // frequency = F_CPU / (Prescaler * (1 + PWM_FREQ))
 #if F_CPU == 16000000
-#define PWM_FREQ 265 // Around 50KHz
+#define PWM_FREQ 265 // Around 60KHz
 #elif F_CPU == 8000000
-#define PWM_FREQ 131 // Around 50KHz
+#define PWM_FREQ 132 // Around 60KHz
 #endif
 
- #define VOL_MAX 10
-//#define VOL_MAX 1 // for DEBUG sound not work with this setup
+// #define VOL_MAX 10
+ #define VOL_MAX 3 // for DEBUG sound not work with this setup
 #define VOL_MIN 1
 
 // Private functions

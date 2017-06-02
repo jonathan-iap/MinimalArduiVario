@@ -1,7 +1,7 @@
 /*
 * Frequency range : 1Hz to 30KHz
 * Range depend to PWM freq
-* Pins are fix, you need to use pin 10 and 9 on ATmega 168 an 328.
+* Pins are fix, you need to use pin 10 and 9 on ATmega 168 and 328.
 *
 * Created on: 22 avr. 2017
 *     Author: Jonathan Iapicco
@@ -23,10 +23,10 @@ bool _isFirstCall = true;
 
 // User functions
 /******************************************************************************
-* Description : Plays tone as long as the function "toneOff()" is not called.
+* Description : Plays tone as long as the function "toneOff()" isn't called.
 * Frequency is update when function is recall.
 * ----------------------------------------------------------------------------
-* frequency in Hertz : 1 -> 30000 Hz
+* frequency in Hertz : 1 -> 30000 Hz(depending to PWM freq)
 *****************************************************************************/
 void toneOn(uint16_t frequency)
 {
@@ -48,7 +48,7 @@ void toneOn(uint16_t frequency)
 * You can update volume, if you recall this function or you can be use directly
 * the "volumeUpdate()" function.
 * ----------------------------------------------------------------------------
-* frequency in Hertz : 1 -> 30000 Hz
+* frequency in Hertz : 1 -> 30000 Hz(depending to PWM freq)
 * volume : 0 -> 10
 *****************************************************************************/
 void toneOn(uint16_t frequency,  uint8_t volume)
@@ -83,7 +83,7 @@ void toneOn(uint16_t frequency,  uint8_t volume)
 * the "volumeUpdate()" function.
 * Return "true" if time is reach.
 *-----------------------------------------------------------------------------
-* frequency in Hertz : 1 -> 30000 Hz
+* frequency in Hertz : 1 -> 30000 Hz(depending to PWM freq)
 * volume : 0 -> 10
 * length in Milliseconde : 0 -> 214748364 ms
 *****************************************************************************/
@@ -147,7 +147,7 @@ bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop)
   *****************************************************************************/
   void toneOff()
   {
-    //For restart timer
+    // For restart timer
     _isFirstCall = true;
 
     // Stop ISR routine
@@ -170,7 +170,7 @@ bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop)
   /******************************************************************************
   * Description : Engine of library. Set timer 1 and pins.
   *
-  *   |<------Audible frequency---->|        {  }<-PWM at 200Kz give volume
+  *   |<------Audible frequency---->|        {  }<-PWM (at a fixed frequency) give volume
   *   || || || || ||                || || || || ||
   * __||_||_||_||_||________________||_||_||_||_||____________ Pin 9 (portB1, oc1A)
   *
@@ -180,14 +180,15 @@ bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop)
   *
   *...|..|..|..|..|..|..|..|..|..|..|..|..|..|..|..|..|...-> ISR call at the PWM frequency
   *
-  * Timer 1 is set to produce a fastPWM at 200Khz.
+  * Timer 1 is set to produce a fastPWM at a fixed frequency (typically around 20Khz to 200Khz).
   * An ISR is attached and divide the main frequency to produce a lower frequency
   * that can be audible.
   * Pin 9 and 10 are 90° out off phase to produce voltage doubling.
   *
   * This library cannot produce high audible frequency is not the goal.
   * But it can be little increased by changing the value of #define PWM_FREQ.
-  * 200Kz is a stable value without side effect.
+  * A max of 200Kz is a stable value and allows to produce a 30KHz "audible frequency".
+  * 22Khz is the max that a common humain can be hear...
   *****************************************************************************/
   void setTimer()
   {
@@ -216,7 +217,7 @@ bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop)
     TCCR1A |= (1 << COM1A1);  // Turn ON PWM on OC1B pin 9
     TCCR1A &= ~(1 << COM1B1); // Turn OFF PWM on OC1B pin 10
     _toneFlipFlop = true;     // Set counter
-    _counterISR = _toneISR;          //
+    _counterISR = _toneISR;   //
     // Enable ISR
     TIMSK1 |= (1 << TOIE1);
 
@@ -231,8 +232,6 @@ bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop)
   *****************************************************************************/
   ISR(TIMER1_OVF_vect)
   {
-    // noInterrupts();
-
     if(_counterISR == 0)
     {
       if(_toneFlipFlop)
@@ -250,6 +249,4 @@ bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop)
       _counterISR = _toneISR;
     }
     else _counterISR--;
-
-    // interrupts();
   }

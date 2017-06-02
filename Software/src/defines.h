@@ -1,40 +1,44 @@
+/*
+* Configuration file.
+*
+* Created on: 2 avr. 2016
+*     Author: Jonathan Iapicco
+*/
+
 #ifndef Define_h
 #define Define_h
 
-// Mémoire EEprom.
+// EEprom memory.
 #define MEM_VOLUME  10
 #define MEM_SENS    11
 #define MEM_FALL    12
 
-// Sensibilité - valeurs.
-#define MAX_SENS    40   // Seuil maxi déclenchement en monté
-#define MIN_SENS    10   // Seuil mini déclenchement en monté
-#define MIN_FALL    -30  // Seuil déclenchement en descente
+// sensibility setting
+#define COEF_FAST     0.1   // Coefficient for filter low past fast
+#define COEF_SLOW     0.07  // Coefficient for filter 
+#define COEF_LOWPASS  0.12  // Coefficient
+#define MAX_SENS      40    // Max trigger threshold for clim
+#define MIN_SENS      10    // Min trigger threshold for clim
+#define MIN_FALL      -30   // Min trigger threshold for fall
+#define STEP_SENS     10    // Step to set threshold
 
-// Constantes pour la fonction "check" - valeurs.
-#define DELAY_TRUE  100    // Durée d'activation du bip et led "check".
-#define FREQ_TRUE   1500    // Fréquence pour le son du bip "check".
-#define DELAY_FALSE 500
-#define FREQ_FALSE  800
-
-// Constantes pour la fonction "vario" - valeurs.
-#define SOUND_RISE 500  // Bip de monté.
-#define SOUND_FALL 400  // Bip de descente.
-
-// Constantes pour la fonction "switchBouton" - valeurs.
-#define STEP_SENS 10  //augmentation par pas de x...
-#define DEBOUNCE  200
+// Tone
+#define SOUND_RISE 500  // Clim tone
+#define SOUND_FALL 400  // fall tone
 
 // Tone frequency
-#define TONE_LIMIT    1400 // approximately resonance frequency of buzzer
+#define TONE_LIMIT    1400
 #define TONE_CONFIRM  1100
 
-// Buttons - pins.
+// Debouncing time
+#define DEBOUNCE  200
+
+// Buttons - pins
 #define BTN_UP        A1
 #define BTN_DOWN      A2
 #define BTN_SELECT    A3
 
-// Leds - pins.
+// Leds - pins
 #define LED_GOOD  A0 // Green
 #define LED_ERROR 13 // Red
 
