@@ -86,6 +86,10 @@ void loop()
 /******************************************************************************
 Functions
 ******************************************************************************/
+
+/*-----------------------------------------------------------------------------
+Details : Just turn off tone and set leds to low
+------------------------------------------------------------------------------*/
 void killPocess()
 {
   toneOff();
@@ -93,7 +97,9 @@ void killPocess()
   digitalWrite(LED_ERROR, LOW);
 }
 
-// Alert if a limit is reach
+/*-----------------------------------------------------------------------------
+Details : Alert if a limit is reach
+------------------------------------------------------------------------------*/
 bool isLimit()
 {
   killPocess();
@@ -105,7 +111,9 @@ bool isLimit()
   return true;
 }
 
-// Confirm if a setting is changed
+/*-----------------------------------------------------------------------------
+Details : Confirm if a setting is changed
+------------------------------------------------------------------------------*/
 bool isConfirm(uint8_t _volume, uint16_t _tone)
 {
   killPocess();
@@ -117,14 +125,13 @@ bool isConfirm(uint8_t _volume, uint16_t _tone)
   return true;
 }
 
-
+/*-----------------------------------------------------------------------------
+Details : If you upload the code for the first time, memory can contain
+invalid values.To correct this we set memory with default values after checking
+the memory integrity.
+------------------------------------------------------------------------------*/
 void initEeprom()
 {
-  /*
-  * If you upload the code for the first time, memory can contain invalid values.
-  * To correct this we set memory with default values.
-  */
-
   // Read old values
   readEeprom();
 
@@ -139,7 +146,9 @@ void initEeprom()
   }
 }
 
-
+/*-----------------------------------------------------------------------------
+Details : Read last settings
+------------------------------------------------------------------------------*/
 void readEeprom()
 {
   volume = EEPROM.read(MEM_VOLUME);
@@ -147,7 +156,11 @@ void readEeprom()
   falling = EEPROM.read(MEM_FALL);
 }
 
-
+/*-----------------------------------------------------------------------------
+Details : Check if the communication with the sensor is correct.
+If status is correct led GREEN blink, if not two long tone are played and
+Led RED stay on.
+------------------------------------------------------------------------------*/
 void CtrlSensor()
 {
   // To say that the your device is running
@@ -180,9 +193,10 @@ void CtrlSensor()
   }
 }
 
-
-// Displays some basic information on this sensor from the unified
-// sensor API sensor_t type (see Adafruit_Sensor for more information)
+/*-----------------------------------------------------------------------------
+Details : Displays some basic information on this sensor from the unified
+sensor API sensor_t type (see Adafruit_Sensor for more information)
+------------------------------------------------------------------------------*/
 void displaySensorDetails(void)
 {
   Serial.println("Sensor is OK");
@@ -201,8 +215,9 @@ void displaySensorDetails(void)
   delay(500);
 }
 
-
-// Engine function, get pressure and filtered value
+/*-----------------------------------------------------------------------------
+Details : Engine function, get pressure and filters values
+------------------------------------------------------------------------------*/
 void vario()
 {
   static int ddsAcc;
@@ -264,48 +279,45 @@ void vario()
   bipSound(toneFreq, ddsAcc);
 }
 
-
-// Manage tone
+/*-----------------------------------------------------------------------------
+Details : Manage tone
+------------------------------------------------------------------------------*/
 void bipSound(int16_t toneFreq, int ddsAcc)
 {
   // DEBUG
   //Serial.print("toneFreq: "); Serial.println(toneFreq);
 
-  // Falling or staidy
+  // Falling enable or staidy
   if (toneFreq < sensibility || ddsAcc > 0)
   {
-    // Lorsque "falling" et activé Bip de descente si on dépasse le seuil de descente "MIN_FALL".
-    if (falling == true && toneFreq < MIN_FALL)
+    if (falling == true && toneFreq < MIN_FALL) // Falling detection enable, falling tone
     {
       toneOn(toneFreq + SOUND_FALL, volume);
       digitalWrite(LED_GOOD, LOW);
       digitalWrite(LED_ERROR, HIGH);
     }
-    // Sinon Bip de monté
-    else if (falling == true && toneFreq > sensibility)
+    else if (falling == true && toneFreq > sensibility) // Falling detection enable, rising tone
     {
       toneOn(toneFreq + SOUND_RISE, volume);
       digitalWrite(LED_GOOD, HIGH);
       digitalWrite(LED_ERROR, LOW);
     }
-    // et si "g_falling" est désactivée ou si on ne bouge pas, pas de son.
-    else
+    else // Falling detection disable or steady give no tone
     {
       toneOff();
       digitalWrite(LED_GOOD, LOW);
       digitalWrite(LED_ERROR, LOW);
     }
   }
-  // Sinon si l'on monte.
-  else
+  else // Rising
   {
-    // Descente activé.
+    // Falling detection enable
     if (falling == true)
     {
       toneOff();
       digitalWrite(LED_GOOD, LOW);
     }
-    // Descente désactivé bip de monté.
+    // Falling detection disable
     else
     {
       toneOn(toneFreq + SOUND_RISE, volume);
@@ -314,10 +326,13 @@ void bipSound(int16_t toneFreq, int ddsAcc)
   }
 }
 
-
+/*-----------------------------------------------------------------------------
+Details : Get buttons status.
+------------------------------------------------------------------------------*/
 uint8_t getButtons()
 {
   uint8_t btnState = 0;
+
   // Read buttons
   for(int i=(Nb_Of_BTN-1); i>=0; i--)
   {
@@ -326,16 +341,19 @@ uint8_t getButtons()
       btnState += buttons[i]; // Make the sum if many buttons are pressed
     }
   }
+
   // Return an unique value
   return btnState;
 }
 
-
+/*-----------------------------------------------------------------------------
+Details : Set volume depending buttons status
+------------------------------------------------------------------------------*/
 void setVolume(uint8_t _button)
 {
   uint8_t lastVolume = volume;
 
-  if(_button == BTN_UP)
+  if(_button == BTN_UP) // Increase volume
   {
     if(volume < VOL_MAX)
     {
@@ -344,7 +362,7 @@ void setVolume(uint8_t _button)
     }
     else isLimit();
   }
-  else if(_button == BTN_DOWN)
+  else if(_button == BTN_DOWN) // Decrease volume
   {
     if(volume > VOL_MIN)
     {
@@ -354,44 +372,53 @@ void setVolume(uint8_t _button)
     else isLimit();
   }
 
+  // Save setting only if was changed
   if(sensibility != lastVolume) EEPROM.write(MEM_VOLUME, volume);
 }
 
-
+/*-----------------------------------------------------------------------------
+Details : Set sensibility depending buttons status
+------------------------------------------------------------------------------*/
 void setSensibility(uint8_t _button)
 {
   uint8_t lastSensibility = sensibility;
   bool isMax = false;
 
-  if(_button == (BTN_SELECT+BTN_UP))
+  if(_button == (BTN_SELECT+BTN_UP)) // Decrease sensibility
   {
     if(sensibility < MAX_SENS) sensibility += STEP_SENS;
     else isMax = true;
   }
-  else if(_button == (BTN_SELECT+BTN_DOWN))
+  else if(_button == (BTN_SELECT+BTN_DOWN)) // Increase sensibility
   {
     if(sensibility > MIN_SENS) sensibility -= STEP_SENS;
     else isMax = true;
   }
 
+  // Inform user what is current setting
   for(uint8_t i ; i<sensibility; i+=STEP_SENS)
   {
     isConfirm(VOL_MAX, TONE_CONFIRM+200);
     delay(50);
   }
 
+  // If setting is at the maximum value
   if(isMax) isLimit();
 
+  // Save setting only if was changed
   if(sensibility != lastSensibility) EEPROM.write(MEM_SENS, sensibility);
 }
 
-
+/*-----------------------------------------------------------------------------
+Details : Enabling or disabling falling detection
+------------------------------------------------------------------------------*/
 void setMode()
 {
   bool lastFalling = falling;
 
+  // Enable/disable falling detection
   falling =! falling;
-
+  // Save in EEprom
   EEPROM.write(MEM_FALL, falling);
 
   if(lastFalling) // falling was active and is now inactive
@@ -414,7 +441,9 @@ void setMode()
   }
 }
 
-
+/*-----------------------------------------------------------------------------
+Details : Sorts buttons manipulation.
+------------------------------------------------------------------------------*/
 void menuSetting(uint8_t _button)
 {
   static bool lastState = false;
@@ -423,7 +452,8 @@ void menuSetting(uint8_t _button)
   {
     killPocess();
 
-    while((_button = getButtons()) == BTN_SELECT ){} // Buttons SELECT is pressed
+    // Do nothing while Buttons SELECT is pressed
+    while((_button = getButtons()) == BTN_SELECT ){}
 
     if(_button == (BTN_SELECT+BTN_UP) || _button == (BTN_SELECT+BTN_DOWN))
     {
