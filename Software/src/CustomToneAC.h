@@ -16,7 +16,7 @@
 #if F_CPU == 16000000
 #define PWM_FREQ 265 // Around 60KHz
 #elif F_CPU == 8000000
-#define PWM_FREQ 132 // Around 60KHz
+#define PWM_FREQ 150 // Around 55KHz
 #endif
 
 // #define VOL_MAX 10

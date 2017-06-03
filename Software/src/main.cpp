@@ -28,6 +28,7 @@ Adafruit_BMP085_Unified BMP180 = Adafruit_BMP085_Unified(10085);
 
 // Functions declaration-------------------------------------------------------
 // Init and checking
+void killPocess();
 bool isLimit();
 bool isConfirm(uint8_t _volume, uint16_t _tone);
 void initEeprom();
@@ -85,11 +86,17 @@ void loop()
 /******************************************************************************
 Functions
 ******************************************************************************/
-// Alert if a limit is reach
-bool isLimit()
+void killPocess()
 {
   toneOff();
   digitalWrite(LED_GOOD, LOW);
+  digitalWrite(LED_ERROR, LOW);
+}
+
+// Alert if a limit is reach
+bool isLimit()
+{
+  killPocess();
 
   digitalWrite(LED_ERROR, HIGH);
   toneOn(TONE_LIMIT, VOL_MAX, 500, LOW);
@@ -101,8 +108,7 @@ bool isLimit()
 // Confirm if a setting is changed
 bool isConfirm(uint8_t _volume, uint16_t _tone)
 {
-  toneOff();
-  digitalWrite(LED_ERROR, LOW);
+  killPocess();
 
   digitalWrite(LED_GOOD, HIGH);
   toneOn(_tone, _volume, 200, LOW);
@@ -246,7 +252,7 @@ void vario()
   toneFreq = constrain(toneFreqLowpass, -400, 500);
 
   // DEBUG
-  // Serial.print("toneFreq: "); Serial.println(toneFreq,4);
+  Serial.print("toneFreq: "); Serial.println(toneFreq,4);
 
   // "ddsAcc" give a "delay time" to produce a bip-bip-bip....
   ddsAcc += toneFreq * 100 + 2000;
@@ -355,33 +361,26 @@ void setVolume(uint8_t _button)
 void setSensibility(uint8_t _button)
 {
   uint8_t lastSensibility = sensibility;
+  bool isMax = false;
 
   if(_button == (BTN_SELECT+BTN_UP))
   {
-    if(sensibility < MAX_SENS)
-    {
-      sensibility += STEP_SENS;
-      for(uint8_t i ; i<sensibility; i+=STEP_SENS)
-      {
-        isConfirm(VOL_MAX, TONE_CONFIRM+200);
-        delay(50);
-      }
-    }
-    else isLimit();
+    if(sensibility < MAX_SENS) sensibility += STEP_SENS;
+    else isMax = true;
   }
   else if(_button == (BTN_SELECT+BTN_DOWN))
   {
-    if(sensibility > MIN_SENS)
-    {
-      sensibility -= STEP_SENS;
-      for(uint8_t i ; i<sensibility; i+=STEP_SENS)
-      {
-        isConfirm(VOL_MAX, TONE_CONFIRM+200);
-        delay(50);
-      }
-    }
-    else isLimit();
+    if(sensibility > MIN_SENS) sensibility -= STEP_SENS;
+    else isMax = true;
   }
+
+  for(uint8_t i ; i<sensibility; i+=STEP_SENS)
+  {
+    isConfirm(VOL_MAX, TONE_CONFIRM+200);
+    delay(50);
+  }
+
+  if(isMax) isLimit();
 
   if(sensibility != lastSensibility) EEPROM.write(MEM_SENS, sensibility);
 }
@@ -389,28 +388,56 @@ void setSensibility(uint8_t _button)
 
 void setMode()
 {
+  bool lastFalling = falling;
+
   falling =! falling;
 
   EEPROM.write(MEM_FALL, falling);
 
-  isConfirm(VOL_MAX, TONE_CONFIRM-200);
-  delay(2);
-  isConfirm(VOL_MAX, TONE_CONFIRM-200);
+  if(lastFalling) // falling was active and is now inactive
+  {
+    isConfirm(VOL_MAX, TONE_CONFIRM);
+    delay(2);
+    isConfirm(VOL_MAX, TONE_CONFIRM);
+  }
+  else // falling was inactive and is now active
+  {
+    isConfirm(VOL_MAX, TONE_CONFIRM);
+
+    digitalWrite(LED_ERROR, HIGH);
+
+    for(uint16_t i = SOUND_FALL ; i > (SOUND_FALL-200); i--)
+    {
+      toneOn(i, volume);
+      delay(2);
+    }
+  }
 }
 
 
 void menuSetting(uint8_t _button)
 {
+  static bool lastState = false;
+
   if(_button == BTN_SELECT || _button == (BTN_SELECT+BTN_UP) || _button == (BTN_SELECT+BTN_DOWN))
   {
-    while((_button = getButtons()) == BTN_SELECT ){}
+    killPocess();
+
+    while((_button = getButtons()) == BTN_SELECT ){} // Buttons SELECT is pressed
 
     if(_button == (BTN_SELECT+BTN_UP) || _button == (BTN_SELECT+BTN_DOWN))
     {
+      lastState = true;
+
       setSensibility(_button);
-      delay(DEBOUNCE+400);
+
+      delay(DEBOUNCE);
     }
-    else setMode();
+    else if(lastState) // Prevents to change again falling detection
+    {
+      lastState = false;
+    }
+    else setMode(); // Enable/disable falling detection
   }
   else
   {

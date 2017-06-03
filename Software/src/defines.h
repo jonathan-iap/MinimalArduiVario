@@ -15,11 +15,11 @@
 
 // sensibility setting
 #define COEF_FAST     0.1   // Coefficient for filter low past fast
-#define COEF_SLOW     0.07  // Coefficient for filter 
-#define COEF_LOWPASS  0.12  // Coefficient
+#define COEF_SLOW     0.06  // Coefficient for filter
+#define COEF_LOWPASS  0.12  // Coefficient for low pass tone
 #define MAX_SENS      40    // Max trigger threshold for clim
 #define MIN_SENS      10    // Min trigger threshold for clim
-#define MIN_FALL      -30   // Min trigger threshold for fall
+#define MIN_FALL      -22   // Min trigger threshold for fall
 #define STEP_SENS     10    // Step to set threshold
 
 // Tone
