@@ -15,7 +15,7 @@
 // Give the time to make one periode at the pwm frequency
 #define PWM_FREQ_TO_TIME (1000.0 / (F_CPU / (T1_PRESCALER * (PWM_FREQ + 1.0))))
 
-volatile bool _toneFlipFlop = true; // Switch port output
+volatile bool _toneFlipFlop = true; // For switch port output
 volatile uint16_t _toneISR = 0; // Divide timer to create audible frequency
 volatile uint16_t _counterISR = 0; // Counter for toneISR
 bool _isFirstCall = true;

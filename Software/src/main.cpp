@@ -1,3 +1,10 @@
+/*
+Inspired by http://wildlab.org/index.php/2015/07/07/arduino-variometer/
+
+Created on: 2 avr. 2016
+Author: Jonathan Iapicco
+*/
+
 // Includes -------------------------------------------------------------------
 #include <Arduino.h>
 #include <Wire.h>
@@ -98,7 +105,7 @@ void killPocess(void)
 }
 
 /*-----------------------------------------------------------------------------
-Details : Alert if a limit is reach
+Details : Alert if a limit is reached
 ------------------------------------------------------------------------------*/
 bool isLimit(void)
 {
