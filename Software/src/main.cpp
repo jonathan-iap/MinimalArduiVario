@@ -28,21 +28,21 @@ Adafruit_BMP085_Unified BMP180 = Adafruit_BMP085_Unified(10085);
 
 // Functions declaration-------------------------------------------------------
 // Init and checking
-void killPocess();
-bool isLimit();
+void killPocess(void);
+bool isLimit(void);
 bool isConfirm(uint8_t _volume, uint16_t _tone);
-void initEeprom();
-void readEeprom();
-void CtrlSensor();
-void displaySensorDetails();
+void initEeprom(void);
+void readEeprom(void);
+void CtrlSensor(void);
+void displaySensorDetails(void);
 // Engine function
-void vario();
-void bipSound(int16_t toneFreq, int p_ddsAcc);
+void vario(void);
+void bipSound(int16_t _toneFreq, int16_t _ddsAcc);
 // settings
-uint8_t getButtons();
+uint8_t getButtons(void);
 void setVolume(uint8_t _button);
 void setSensibility(uint8_t _button);
-void setMode();
+void setMode(void);
 void menuSetting(uint8_t _button);
 
 
@@ -90,7 +90,7 @@ Functions
 /*-----------------------------------------------------------------------------
 Details : Just turn off tone and set leds to low
 ------------------------------------------------------------------------------*/
-void killPocess()
+void killPocess(void)
 {
   toneOff();
   digitalWrite(LED_GOOD, LOW);
@@ -100,7 +100,7 @@ void killPocess()
 /*-----------------------------------------------------------------------------
 Details : Alert if a limit is reach
 ------------------------------------------------------------------------------*/
-bool isLimit()
+bool isLimit(void)
 {
   killPocess();
 
@@ -130,7 +130,7 @@ Details : If you upload the code for the first time, memory can contain
 invalid values.To correct this we set memory with default values after checking
 the memory integrity.
 ------------------------------------------------------------------------------*/
-void initEeprom()
+void initEeprom(void)
 {
   // Read old values
   readEeprom();
@@ -149,7 +149,7 @@ void initEeprom()
 /*-----------------------------------------------------------------------------
 Details : Read last settings
 ------------------------------------------------------------------------------*/
-void readEeprom()
+void readEeprom(void)
 {
   volume = EEPROM.read(MEM_VOLUME);
   sensibility = EEPROM.read(MEM_SENS);
@@ -161,9 +161,9 @@ Details : Check if the communication with the sensor is correct.
 If status is correct led GREEN blink, if not two long tone are played and
 Led RED stay on.
 ------------------------------------------------------------------------------*/
-void CtrlSensor()
+void CtrlSensor(void)
 {
-  // To say that the your device is running
+  // First tone to say that the your device is running
   isConfirm(VOL_MAX, TONE_CONFIRM);
   Serial.print("Vario is on : ");
   delay(50);
@@ -188,7 +188,9 @@ void CtrlSensor()
   // OK : if sensor is correctly initialise led green and buzzer are plays
   else
   {
+    // Second tone sensor is ok program run
     isConfirm(VOL_MAX, TONE_CONFIRM);
+    // For DEBUG
     displaySensorDetails();
   }
 }
@@ -218,9 +220,9 @@ void displaySensorDetails(void)
 /*-----------------------------------------------------------------------------
 Details : Engine function, get pressure and filters values
 ------------------------------------------------------------------------------*/
-void vario()
+void vario(void)
 {
-  static int ddsAcc;
+  static int16_t ddsAcc;
   static float pressure, toneFreq, toneFreqLowpass;
 
   // DEBUG
@@ -282,23 +284,23 @@ void vario()
 /*-----------------------------------------------------------------------------
 Details : Manage tone
 ------------------------------------------------------------------------------*/
-void bipSound(int16_t toneFreq, int ddsAcc)
+void bipSound(int16_t _toneFreq, int16_t _ddsAcc)
 {
   // DEBUG
   //Serial.print("toneFreq: "); Serial.println(toneFreq);
 
   // Falling enable or staidy
-  if (toneFreq < sensibility || ddsAcc > 0)
+  if (_toneFreq < sensibility || _ddsAcc > 0)
   {
-    if (falling == true && toneFreq < MIN_FALL) // Falling detection enable, falling tone
+    if (falling == true && _toneFreq < MIN_FALL) // Falling detection enable, falling tone
     {
-      toneOn(toneFreq + SOUND_FALL, volume);
+      toneOn(_toneFreq + SOUND_FALL, volume);
       digitalWrite(LED_GOOD, LOW);
       digitalWrite(LED_ERROR, HIGH);
     }
-    else if (falling == true && toneFreq > sensibility) // Falling detection enable, rising tone
+    else if (falling == true && _toneFreq > sensibility) // Falling detection enable, rising tone
     {
-      toneOn(toneFreq + SOUND_RISE, volume);
+      toneOn(_toneFreq + SOUND_RISE, volume);
       digitalWrite(LED_GOOD, HIGH);
       digitalWrite(LED_ERROR, LOW);
     }
@@ -320,7 +322,7 @@ void bipSound(int16_t toneFreq, int ddsAcc)
     // Falling detection disable
     else
     {
-      toneOn(toneFreq + SOUND_RISE, volume);
+      toneOn(_toneFreq + SOUND_RISE, volume);
       digitalWrite(LED_GOOD, HIGH);
     }
   }
@@ -329,7 +331,7 @@ void bipSound(int16_t toneFreq, int ddsAcc)
 /*-----------------------------------------------------------------------------
 Details : Get buttons status.
 ------------------------------------------------------------------------------*/
-uint8_t getButtons()
+uint8_t getButtons(void)
 {
   uint8_t btnState = 0;
 
@@ -412,7 +414,7 @@ void setSensibility(uint8_t _button)
 /*-----------------------------------------------------------------------------
 Details : Enabling or disabling falling detection
 ------------------------------------------------------------------------------*/
-void setMode()
+void setMode(void)
 {
   bool lastFalling = falling;
 
