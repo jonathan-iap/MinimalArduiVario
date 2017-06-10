@@ -259,6 +259,10 @@ void vario(void)
   // DEBUG
   // Serial.print("lowPassFast : "); Serial.println(lowPassFast,4);
   // Serial.print("lowPassSlow : "); Serial.println(lowPassSlow,4);
+  // DEBUG PLOT
+  // Serial.print(lowPassFast,4);
+  // Serial.print(" ");
+  // Serial.println(lowPassSlow,4);
 
   // Make difference
   toneFreq = (lowPassSlow - lowPassFast) * 50;
@@ -276,10 +280,10 @@ void vario(void)
   toneFreq = constrain(toneFreqLowpass, -400, 500);
 
   // DEBUG
-  Serial.print("toneFreq: "); Serial.println(toneFreq,4);
+  // Serial.print("toneFreq: "); Serial.println(toneFreq,4);
 
   // "ddsAcc" give a "delay time" to produce a bip-bip-bip....
-  ddsAcc += toneFreq * 100 + 2000;
+  ddsAcc += toneFreq * 100 + 500;
 
   // DEBUG
   // Serial.print("ddsAcc: "); Serial.println(ddsAcc);

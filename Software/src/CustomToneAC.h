@@ -1,9 +1,9 @@
 /*
- * CustomToneAC.h
- *
- *  Created on: 22 avr. 2017
- *      Author: Jonathan Iapicco
- */
+* CustomToneAC.h
+*
+*  Created on: 22 avr. 2017
+*      Author: Jonathan Iapicco
+*/
 
 #ifndef LIB_CUSTOMTONEAC_NEWTONEAC_H_
 #define LIB_CUSTOMTONEAC_NEWTONEAC_H_
@@ -16,10 +16,10 @@
 #if F_CPU == 16000000
 #define PWM_FREQ 265 // Around 60KHz
 #elif F_CPU == 8000000
-#define PWM_FREQ 150 // Around 55KHz
+#define PWM_FREQ 140 // Around 55KHz
 #endif
 
- #define VOL_MAX 10
+#define VOL_MAX 10
 // #define VOL_MAX 3 // for DEBUG sound not work with this setup
 #define VOL_MIN 1
 
