@@ -9,6 +9,7 @@ Author: Jonathan Iapicco
 #include <Arduino.h>
 #include <Wire.h>
 #include <EEPROM.h>
+#include "PowerSaving.h"
 #include "defines.h"
 #include "CustomToneAC.h"
 #include "Adafruit_Sensor.h"
@@ -17,8 +18,6 @@ Author: Jonathan Iapicco
 
 // Defines --------------------------------------------------------------------
 #define BAUDRATE 9600
-#define Nb_Of_BTN 3
-
 
 // Global variables -----------------------------------------------------------
 uint8_t buttons[]={BTN_UP, BTN_DOWN, BTN_SELECT};
@@ -58,6 +57,8 @@ SETUP
 *****************************************************************************/
 void setup()
 {
+  setPowerSaving();
+
   // Debug
   Serial.begin(BAUDRATE);
   // Leds

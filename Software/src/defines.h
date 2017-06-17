@@ -37,6 +37,7 @@
 #define BTN_UP        A1
 #define BTN_DOWN      A2
 #define BTN_SELECT    A3
+#define Nb_Of_BTN 3
 
 // Leds - pins
 #define LED_GOOD  A0 // Green
