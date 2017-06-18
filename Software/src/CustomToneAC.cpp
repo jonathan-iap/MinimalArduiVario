@@ -113,140 +113,142 @@ bool toneOn(uint16_t frequency,  uint8_t volume, uint32_t length, bool openLoop)
       if(!openLoop) // Blocking loop stop program
       {
         while(millis() < lengthMillis) // do nothing untils time isn't reached.
-        {}
+        {
 
-          toneOff();
-          _isFirstCall = true;
-          return true;
         }
-      }
-      else if(millis() > lengthMillis) // Open loop, program can continue
-      {
+
         toneOff();
         _isFirstCall = true;
         return true;
       }
     }
-    return false;
-  }
-
-  /******************************************************************************
-  * Description : Update the volume
-  *-----------------------------------------------------------------------------
-  * volume : 0 -> 10
-  *****************************************************************************/
-  void volumeUpdate(uint8_t volume)
-  {
-    // Set PWM
-    OCR1A = map(volume, 0, 10, 1, PWM_FREQ);
-    OCR1B = OCR1A;
-  }
-
-  /******************************************************************************
-  * Description : Stop tone.
-  *****************************************************************************/
-  void toneOff()
-  {
-    // For restart timer
-    _isFirstCall = true;
-
-    // Stop ISR routine
-    noInterrupts();
-
-    // Clear registers
-    TCCR1A = 0;
-    TCCR1B = 0;
-    TCCR1C = 0;
-
-    TIMSK1 = 0; // T1 disable
-
-    interrupts();
-
-    PORTB &= ~((1<<PORTB1) | (1<<PORTB2)); // Pin 9 & 10 to LOW
-  }
-
-
-  // Private Functions
-  /******************************************************************************
-  * Description : Engine of library. Set timer 1 and pins.
-  *
-  *   |<------Audible frequency---->|        {  }<-PWM (at a fixed frequency) give volume
-  *   || || || || ||                || || || || ||
-  * __||_||_||_||_||________________||_||_||_||_||____________ Pin 9 (portB1, oc1A)
-  *
-  *
-  *                  || || || || ||                || || || || ||
-  *__________________||_||_||_||_||________________||_||_||_||_||_______ Pin10 (portB2, oc1B)
-  *
-  *...|..|..|..|..|..|..|..|..|..|..|..|..|..|..|..|..|...-> ISR call at the PWM frequency
-  *
-  * Timer 1 is set to produce a fastPWM at a fixed frequency (typically around 20Khz to 200Khz).
-  * An ISR is attached and divide the main frequency to produce a lower frequency
-  * that can be audible.
-  * Pin 9 and 10 are 90° out off phase to produce voltage doubling.
-  *
-  * This library cannot produce high audible frequency is not the goal.
-  * But it can be little increased by changing the value of #define PWM_FREQ.
-  * A max of 200Kz is a stable value and allows to produce a 30KHz "audible frequency".
-  * 22Khz is the max that a common humain can be hear...
-  *****************************************************************************/
-  void setTimer()
-  {
-    // Set pin 9 & 10 as OUTPUT (need for PWM)
-    DDRB |= ((1 << DDB2) | (1 << DDB1));
-    // Set pin 9 & 10 to LOW
-    PORTB &= ~((1 << PORTB2) | (1 << PORTB1));
-
-    //------------------------------------------
-    // TIMER1 setting :
-    //------------------------------------------
-    noInterrupts(); // Disable interrupts
-
-    // Clear register
-    TCCR1A = 0;
-    TCCR1B = 0;
-    TCCR1C = 0;
-    // Set registers : Fast PWM , ICR1 as TOP
-    TCCR1A |= (1 << WGM11);
-    TCCR1B |= (1 << WGM13) | (1 << WGM12);
-    // Prescaler : x1
-    TCCR1B |= (1 << CS10);
-    // TOP frequency
-    ICR1 = PWM_FREQ;
-    // First use :
-    TCCR1A |= (1 << COM1A1);  // Turn ON PWM on OC1B pin 9
-    TCCR1A &= ~(1 << COM1B1); // Turn OFF PWM on OC1B pin 10
-    _toneFlipFlop = true;     // Set counter
-    _counterISR = _toneISR;   //
-    // Enable ISR
-    TIMSK1 |= (1 << TOIE1);
-
-    interrupts(); // Enable interrupts
-  }
-
-
-  /******************************************************************************
-  * Interrupt routine : Turn on and off the PWM on pin 9 and 10 to produce
-  * a 90° out off phase and give an audible frequency.
-  * If you turn PWM frequency to high this interrupt is not performed correctly.
-  *****************************************************************************/
-  ISR(TIMER1_OVF_vect)
-  {
-    if(_counterISR == 0)
+    else if(millis() > lengthMillis) // Open loop, program can continue
     {
-      if(_toneFlipFlop)
-      {
-        TCCR1A |= (1 << COM1B1);  // Turn ON PWM on OC1B pin 10
-        TCCR1A &= ~(1 << COM1A1); // Turn OFF PWM on OC1A pin 9
-        _toneFlipFlop = false;
-      }
-      else
-      {
-        TCCR1A |= (1 << COM1A1);  // Turn ON PWM on OC1B pin 9
-        TCCR1A &= ~(1 << COM1B1); // Turn OFF PWM on OC1B pin 10
-        _toneFlipFlop = true;
-      }
-      _counterISR = _toneISR;
+      toneOff();
+      _isFirstCall = true;
+      return true;
     }
-    else _counterISR--;
   }
+  return false;
+}
+
+/******************************************************************************
+* Description : Update the volume
+*-----------------------------------------------------------------------------
+* volume : 0 -> 10
+*****************************************************************************/
+void volumeUpdate(uint8_t volume)
+{
+  // Set PWM
+  OCR1A = map(volume, 0, 10, 1, PWM_FREQ);
+  OCR1B = OCR1A;
+}
+
+/******************************************************************************
+* Description : Stop tone.
+*****************************************************************************/
+void toneOff()
+{
+  // For restart timer
+  _isFirstCall = true;
+
+  // Stop ISR routine
+  noInterrupts();
+
+  // Clear registers
+  TCCR1A = 0;
+  TCCR1B = 0;
+  TCCR1C = 0;
+
+  TIMSK1 = 0; // T1 disable
+
+  interrupts();
+
+  PORTB &= ~((1<<PORTB1) | (1<<PORTB2)); // Pin 9 & 10 to LOW
+}
+
+
+// Private Functions
+/******************************************************************************
+* Description : Engine of library. Set timer 1 and pins.
+*
+*   |<------Audible frequency---->|        {  }<-PWM (at a fixed frequency) give volume
+*   || || || || ||                || || || || ||
+* __||_||_||_||_||________________||_||_||_||_||____________ Pin 9 (portB1, oc1A)
+*
+*
+*                  || || || || ||                || || || || ||
+*__________________||_||_||_||_||________________||_||_||_||_||_______ Pin10 (portB2, oc1B)
+*
+*...|..|..|..|..|..|..|..|..|..|..|..|..|..|..|..|..|...-> ISR call at the PWM frequency
+*
+* Timer 1 is set to produce a fastPWM at a fixed frequency (typically around 20Khz to 200Khz).
+* An ISR is attached and divide the main frequency to produce a lower frequency
+* that can be audible.
+* Pin 9 and 10 are 90° out off phase to produce voltage doubling.
+*
+* This library cannot produce high audible frequency is not the goal.
+* But it can be little increased by changing the value of #define PWM_FREQ.
+* A max of 200Kz is a stable value and allows to produce a 30KHz "audible frequency".
+* 22Khz is the max that a common humain can be hear...
+*****************************************************************************/
+void setTimer()
+{
+  // Set pin 9 & 10 as OUTPUT (need for PWM)
+  DDRB |= ((1 << DDB2) | (1 << DDB1));
+  // Set pin 9 & 10 to LOW
+  PORTB &= ~((1 << PORTB2) | (1 << PORTB1));
+
+  //------------------------------------------
+  // TIMER1 setting :
+  //------------------------------------------
+  noInterrupts(); // Disable interrupts
+
+  // Clear register
+  TCCR1A = 0;
+  TCCR1B = 0;
+  TCCR1C = 0;
+  // Set registers : Fast PWM , ICR1 as TOP
+  TCCR1A |= (1 << WGM11);
+  TCCR1B |= (1 << WGM13) | (1 << WGM12);
+  // Prescaler : x1
+  TCCR1B |= (1 << CS10);
+  // TOP frequency
+  ICR1 = PWM_FREQ;
+  // First use :
+  TCCR1A |= (1 << COM1A1);  // Turn ON PWM on OC1B pin 9
+  TCCR1A &= ~(1 << COM1B1); // Turn OFF PWM on OC1B pin 10
+  _toneFlipFlop = true;     // Set counter
+  _counterISR = _toneISR;   //
+  // Enable ISR
+  TIMSK1 |= (1 << TOIE1);
+
+  interrupts(); // Enable interrupts
+}
+
+
+/******************************************************************************
+* Interrupt routine : Turn on and off the PWM on pin 9 and 10 to produce
+* a 90° out off phase and give an audible frequency.
+* If you turn PWM frequency to high this interrupt is not performed correctly.
+*****************************************************************************/
+ISR(TIMER1_OVF_vect)
+{
+  if(_counterISR == 0)
+  {
+    if(_toneFlipFlop)
+    {
+      TCCR1A |= (1 << COM1B1);  // Turn ON PWM on OC1B pin 10
+      TCCR1A &= ~(1 << COM1A1); // Turn OFF PWM on OC1A pin 9
+      _toneFlipFlop = false;
+    }
+    else
+    {
+      TCCR1A |= (1 << COM1A1);  // Turn ON PWM on OC1B pin 9
+      TCCR1A &= ~(1 << COM1B1); // Turn OFF PWM on OC1B pin 10
+      _toneFlipFlop = true;
+    }
+    _counterISR = _toneISR;
+  }
+  else _counterISR--;
+}

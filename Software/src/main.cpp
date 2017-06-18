@@ -16,9 +16,6 @@ Author: Jonathan Iapicco
 #include "Adafruit_BMP085_U.h" // Works for BMP180
 
 
-// Defines --------------------------------------------------------------------
-#define BAUDRATE 9600
-
 // Global variables -----------------------------------------------------------
 uint8_t buttons[]={BTN_UP, BTN_DOWN, BTN_SELECT};
 uint8_t volume;
@@ -57,10 +54,14 @@ SETUP
 *****************************************************************************/
 void setup()
 {
-  setPowerSaving();
-
+  // DEBUG
+  delay(2000); // Allow to be flash if watchdog fail
+  // Power
+  init_PowerSaving();
   // Debug
+  #ifdef DEBUG
   Serial.begin(BAUDRATE);
+  #endif
   // Leds
   pinMode(LED_GOOD, OUTPUT);
   pinMode(LED_ERROR, OUTPUT);
@@ -173,7 +174,9 @@ void CtrlSensor(void)
 {
   // First tone to say that the your device is running
   isConfirm(VOL_MAX, TONE_CONFIRM);
+  #ifdef DEBUG
   Serial.print("Vario is on : ");
+  #endif
   delay(50);
 
   // Initialization of pressure sensor
@@ -188,8 +191,10 @@ void CtrlSensor(void)
     isLimit();
     digitalWrite(LED_ERROR, HIGH);
 
+    #ifdef DEBUG
     Serial.println("ERROR -> No detected sensor !");
     Serial.println("Please Check your I2C ADDR, your power and your wires");
+    #endif
 
     while (1){} // Stop program
   }
@@ -198,8 +203,10 @@ void CtrlSensor(void)
   {
     // Second tone sensor is ok program run
     isConfirm(VOL_MAX, TONE_CONFIRM);
-    // For DEBUG
+
+    #ifdef DEBUG
     displaySensorDetails();
+    #endif
   }
 }
 
@@ -321,6 +328,7 @@ void bipSound(int16_t _toneFreq, int16_t _ddsAcc)
       toneOff();
       digitalWrite(LED_GOOD, LOW);
       digitalWrite(LED_ERROR, LOW);
+      sleeping();
     }
   }
   else // Rising
@@ -330,6 +338,7 @@ void bipSound(int16_t _toneFreq, int16_t _ddsAcc)
     {
       toneOff();
       digitalWrite(LED_GOOD, LOW);
+      sleeping();
     }
     // Falling detection disable
     else

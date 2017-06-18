@@ -8,6 +8,10 @@
 #ifndef Define_h
 #define Define_h
 
+// Debug
+#define DEBUG         // Uncomment if we want to use serial communication
+#define BAUDRATE 9600 // Set speed of serial communication
+
 // EEprom memory.
 #define MEM_VOLUME  10
 #define MEM_SENS    11

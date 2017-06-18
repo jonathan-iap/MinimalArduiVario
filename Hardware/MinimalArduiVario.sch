@@ -702,46 +702,32 @@ F 3 "" H 5650 7300 50  0001 C CNN
 	0    -1   1    0   
 $EndComp
 Wire Wire Line
-	1200 5950 1200 6050
-Wire Wire Line
-	1200 6050 1200 6150
+	1200 5950 1200 6150
 Connection ~ 1200 6050
 Wire Wire Line
 	5425 2925 5275 2925
 Wire Wire Line
-	5425 2825 5425 2875
-Wire Wire Line
-	5425 2875 5425 2925
+	5425 2825 5425 2925
 Wire Wire Line
 	4825 2925 4975 2925
 Wire Wire Line
-	4825 2825 4825 2875
+	4825 2825 4825 2925
 Wire Wire Line
-	4825 2875 4825 2925
-Wire Wire Line
-	4825 3250 4825 3300
-Wire Wire Line
-	4825 3300 4825 3350
+	4825 3250 4825 3350
 Wire Wire Line
 	4825 3350 4975 3350
 Wire Wire Line
 	5425 3350 5275 3350
 Wire Wire Line
-	5425 3250 5425 3300
+	5425 3250 5425 3350
 Wire Wire Line
-	5425 3300 5425 3350
-Wire Wire Line
-	4825 3675 4825 3725
-Wire Wire Line
-	4825 3725 4825 3775
+	4825 3675 4825 3775
 Wire Wire Line
 	4825 3775 4975 3775
 Wire Wire Line
 	5425 3775 5275 3775
 Wire Wire Line
-	5425 3675 5425 3725
-Wire Wire Line
-	5425 3725 5425 3775
+	5425 3675 5425 3775
 Wire Wire Line
 	5425 2875 5525 2875
 Wire Wire Line
@@ -755,9 +741,7 @@ Connection ~ 5525 3300
 Connection ~ 4825 2875
 Connection ~ 4825 3725
 Wire Wire Line
-	5525 2875 5525 3300
-Wire Wire Line
-	5525 3300 5525 3725
+	5525 2875 5525 3725
 Connection ~ 4825 3300
 Wire Wire Line
 	4700 2875 4825 2875
@@ -766,9 +750,7 @@ Wire Wire Line
 Wire Wire Line
 	4825 3725 4700 3725
 Wire Wire Line
-	1200 3850 1200 3900
-Wire Wire Line
-	1200 3900 1200 4150
+	1200 3850 1200 4150
 Connection ~ 1200 3900
 Wire Wire Line
 	1200 3950 1200 3900
@@ -861,9 +843,7 @@ Wire Notes Line
 Wire Wire Line
 	5425 5125 5425 5050
 Wire Wire Line
-	5425 5250 5625 5250
-Wire Wire Line
-	5625 5250 5725 5250
+	5425 5250 5725 5250
 Wire Wire Line
 	5625 5250 5625 5050
 Wire Wire Line
@@ -876,15 +856,11 @@ Wire Wire Line
 Connection ~ 4525 5150
 Connection ~ 4525 5050
 Wire Wire Line
-	5425 4750 5525 4750
-Wire Wire Line
-	5525 4750 5625 4750
+	5425 4750 5625 4750
 Connection ~ 5525 4750
 Connection ~ 4300 5050
 Wire Wire Line
-	4300 5000 4300 5050
-Wire Wire Line
-	4300 5050 4300 5150
+	4300 5000 4300 5150
 Wire Notes Line
 	6075 7600 4050 7600
 Wire Wire Line
@@ -892,39 +868,25 @@ Wire Wire Line
 Wire Wire Line
 	2425 1250 2150 1250
 Wire Wire Line
-	1200 950  1850 950 
-Wire Wire Line
-	1850 950  2150 950 
-Wire Wire Line
-	2150 950  2275 950 
+	1200 950  2275 950 
 Connection ~ 2150 950 
 Wire Wire Line
 	1250 1250 1250 1325
 Connection ~ 1850 950 
 Wire Wire Line
-	2675 950  2825 950 
-Wire Wire Line
-	2825 950  3225 950 
-Wire Wire Line
-	3225 950  3500 950 
+	2675 950  3500 950 
 Wire Wire Line
 	3225 950  3225 1075
 Wire Wire Line
 	2825 1075 2825 950 
 Connection ~ 2825 950 
 Wire Wire Line
-	2650 1500 2825 1500
+	2650 1500 2925 1500
 Wire Wire Line
-	2825 1500 2925 1500
-Wire Wire Line
-	2825 1375 2825 1500
-Wire Wire Line
-	2825 1500 2825 1600
+	2825 1375 2825 1600
 Connection ~ 2825 1500
 Wire Wire Line
-	3225 1375 3225 1500
-Wire Wire Line
-	3225 1500 3225 2075
+	3225 1375 3225 2075
 Wire Wire Line
 	3225 2075 1850 2075
 Wire Wire Line
@@ -997,9 +959,7 @@ $EndComp
 Wire Wire Line
 	7450 3075 7550 3075
 Wire Wire Line
-	7550 3075 7550 3200
-Wire Wire Line
-	7550 3200 7550 3350
+	7550 3075 7550 3350
 Wire Wire Line
 	7550 3350 7450 3350
 Connection ~ 7550 3200
@@ -1018,8 +978,8 @@ Text GLabel 5025 6950 2    50   BiDi ~ 0
 SCK-RED
 Wire Wire Line
 	5225 7150 5025 7150
-Text Notes 4975 7425 0    60   ~ 0
-id = 20mA
+Text Notes 5150 7425 0    60   ~ 0
+Need to be removed
 $Comp
 L CONN_01X08 J2
 U 1 1 590E270D
@@ -1041,4 +1001,12 @@ Text GLabel 3100 5000 2    50   Input ~ 0
 BTN1
 Text GLabel 3100 4800 2    50   Input ~ 0
 BTN2
+Wire Notes Line
+	5200 7075 6025 7075
+Wire Notes Line
+	6025 7075 6025 7550
+Wire Notes Line
+	6025 7550 5200 7550
+Wire Notes Line
+	5200 7550 5200 7075
 $EndSCHEMATC

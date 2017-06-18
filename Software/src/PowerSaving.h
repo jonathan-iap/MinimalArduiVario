@@ -5,10 +5,17 @@
 #include <avr/sleep.h>
 #include <avr/wdt.h>
 #include <Arduino.h>
+#include "defines.h"
 
-#define MAX_PINS_UC 19 // ATmega328P
+#define PINS_ON_UC 19 // ATmega328P
 
-void setPowerSaving(void);
+void WDT_Off(void);
+void WDT_On(void);
+void disableDevices(void);
+void enableDevices(void);
+void init_PowerSaving(void);
+void sleeping(void);
+
 
 
 #endif
