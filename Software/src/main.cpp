@@ -21,8 +21,9 @@ uint8_t buttons[]={BTN_UP, BTN_DOWN, BTN_SELECT};
 uint8_t volume;
 int8_t sensibility;
 bool falling;
-unsigned long time = 0;
-unsigned long timeTest = 0;
+// DEBUG
+// unsigned long time = 0;
+// unsigned long timeTest = 0;
 
 
 // Global object --------------------------------------------------------------
@@ -39,8 +40,8 @@ void readEeprom(void);
 void CtrlSensor(void);
 void displaySensorDetails(void);
 // Engine function
-void vario(void);
-void bipSound(int16_t _toneFreq, int16_t _ddsAcc);
+bool vario(void);
+bool bipSound(int16_t _toneFreq, int16_t _ddsAcc);
 // settings
 uint8_t getButtons(void);
 void setVolume(uint8_t _button);
@@ -57,7 +58,7 @@ void setup()
   // DEBUG
   delay(2000); // Allow to be flash if watchdog fail
   // Power
-  init_PowerSaving();
+  init_PowerSaving(); // Must be placed before any codes
   // Debug
   #ifdef DEBUG
   Serial.begin(BAUDRATE);
@@ -83,12 +84,11 @@ LOOP
 *****************************************************************************/
 void loop()
 {
-  // Main function
-  vario();
   // Reading buttons and update settings
   menuSetting(getButtons());
-  // Delay between each mesure
-  delay(20);
+  // Main function
+  if(vario()) delay(20);
+  else sleeping(WDT_30MS);
 }
 
 
@@ -235,7 +235,7 @@ void displaySensorDetails(void)
 /*-----------------------------------------------------------------------------
 Details : Engine function, get pressure and filters values
 ------------------------------------------------------------------------------*/
-void vario(void)
+bool vario(void)
 {
   static int16_t ddsAcc;
   static float pressure, toneFreq, toneFreqLowpass;
@@ -297,14 +297,16 @@ void vario(void)
   // Serial.print("ddsAcc: "); Serial.println(ddsAcc);
 
   // Play tone depending variation.
-  bipSound(toneFreq, ddsAcc);
+  return bipSound(toneFreq, ddsAcc);
 }
 
 /*-----------------------------------------------------------------------------
 Details : Manage tone
 ------------------------------------------------------------------------------*/
-void bipSound(int16_t _toneFreq, int16_t _ddsAcc)
+bool bipSound(int16_t _toneFreq, int16_t _ddsAcc)
 {
+  static bool ledErrState = LOW;
+
   // DEBUG
   //Serial.print("toneFreq: "); Serial.println(toneFreq);
 
@@ -315,30 +317,41 @@ void bipSound(int16_t _toneFreq, int16_t _ddsAcc)
     {
       toneOn(_toneFreq + SOUND_FALL, volume);
       digitalWrite(LED_GOOD, LOW);
-      digitalWrite(LED_ERROR, HIGH);
+      if(ledErrState)
+      {
+        digitalWrite(LED_ERROR, LOW);
+        ledErrState = LOW;
+      }
+      else
+      {
+        digitalWrite(LED_ERROR, HIGH);
+        ledErrState = HIGH;
+      }
     }
     else if (falling == true && _toneFreq > sensibility) // Falling detection enable, rising tone
     {
       toneOn(_toneFreq + SOUND_RISE, volume);
       digitalWrite(LED_GOOD, HIGH);
       digitalWrite(LED_ERROR, LOW);
+      ledErrState = LOW;
     }
     else // Falling detection disable or steady give no tone
     {
       toneOff();
       digitalWrite(LED_GOOD, LOW);
       digitalWrite(LED_ERROR, LOW);
-      sleeping();
+      ledErrState = LOW;
+      return false;
     }
   }
   else // Rising
   {
-    // Falling detection enable
+    // Falling detection enable: rising become falling...
     if (falling == true)
     {
       toneOff();
       digitalWrite(LED_GOOD, LOW);
-      sleeping();
+      return false;
     }
     // Falling detection disable
     else
@@ -347,6 +360,7 @@ void bipSound(int16_t _toneFreq, int16_t _ddsAcc)
       digitalWrite(LED_GOOD, HIGH);
     }
   }
+  return true;
 }
 
 /*-----------------------------------------------------------------------------

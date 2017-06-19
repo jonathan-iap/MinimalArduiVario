@@ -22,7 +22,7 @@ void WDT_Off(void)
 /******************************************************************************
 Description : Turn "On" Watchdog
 ******************************************************************************/
-void WDT_On(void)
+void WDT_On(uint8_t timeOut)
 {
   noInterrupts(); // Disable interrupts
 
@@ -33,34 +33,58 @@ void WDT_On(void)
   WDTCSR |= (1 << WDCE) | (1 << WDE);
 
   // set new watchdog timeout prescaler value
-  WDTCSR = (1<<WDE) | (1<<WDP0); // 32 Millisecondes
-  // WDTCSR = (1<<WDE) | (1<<WDP1); // 64 Millisecondes
-  // WDTCSR = (1<<WDE) | (1<<WDP1) | (1<<WDP0); // 125 Millisecondes
-  // WDTCSR = (1<<WDE) | (1<<WDP2); // 250 Millisecondes
-  // WDTCSR = (1<<WDE) | (1<<WDP2) | (1<<WDP0); // 500 Millisecondes
-  // WDTCSR = (1<<WDE) | (1<<WDP2) | (1<<WDP1); // 1000 Millisecondes
-  // WDTCSR = (1<<WDE) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0); // 2 seconds
-  // WDTCSR = (1<<WDE) | (1<<WDP3); // 4 seconds
-  // WDTCSR = (1<<WDE) | (1<<WDP1) | (1<<WDP0); // 8 seconds
+  switch (timeOut)
+  {
+    case WDT_30MS :
+    {
+      WDTCSR = (1<<WDE) | (1<<WDP0); // 32 Millisecondes
+      break;
+    }
+    case WDT_60MS :
+    {
+      WDTCSR = (1<<WDE) | (1<<WDP1); // 64 Millisecondes
+      break;
+    }
+    case WDT_120MS :
+    {
+      WDTCSR = (1<<WDE) | (1<<WDP1) | (1<<WDP0); // 125 Millisecondes
+      break;
+    }
+    case WDT_250MS :
+    {
+      WDTCSR = (1<<WDE) | (1<<WDP2); // 250 Millisecondes
+      break;
+    }
+    case WDT_500MS :
+    {
+      WDTCSR = (1<<WDE) | (1<<WDP2) | (1<<WDP0); // 500 Millisecondes
+      break;
+    }
+    case WDT_1S :
+    {
+      WDTCSR = (1<<WDE) | (1<<WDP2) | (1<<WDP1); // 1 second
+      break;
+    }
+    case WDT_2S :
+    {
+      WDTCSR = (1<<WDE) | (1<<WDP2) | (1<<WDP1) | (1<<WDP0); // 2 seconds
+      break;
+    }
+    case WDT_4S :
+    {
+      WDTCSR = (1<<WDE) | (1<<WDP3); // 4 seconds
+      break;
+    }
+    case WDT_8S :
+    {
+      WDTCSR = (1<<WDE) | (1<<WDP1) | (1<<WDP0); // 8 seconds
+      break;
+    }
+  }
 
   // Enable the WD interrupt
   WDTCSR |= (1<<WDIE);
 
-
-  // MCUSR &= ~(1 << WDRF);
-  //
-  //   /* In order to change WDE or the prescaler, we need to
-  //      set WDCE (This will allow updates for 4 clock cycles).
-  //   */
-  //   WDTCSR |= (1 << WDCE) | (1 << WDE);
-  //
-  //   /* set new watchdog timeout prescaler value */
-  //   // WDTCSR = 1<<WDP1 | 1<<WDP0; /* 0.125 seconds */
-  //   WDTCSR = 1 << WDP3; /* 4 seconds */
-  //   // WDTCSR = 1 << WDP2 | 1 << WDP1 | 1 << WDP0; /* 2 seconds */
-  //
-  //   /* Enable the WD interrupt (note no reset). */
-  //   WDTCSR |= _BV(WDIE);
   interrupts();   // Enable interrupts
 
 }
@@ -144,7 +168,7 @@ SLEEP_MODE_PWR_SAVE
 SLEEP_MODE_STANDBY
 SLEEP_MODE_PWR_DOWN
 ******************************************************************************/
-void sleeping(void)
+void sleeping(uint8_t duration)
 {
   //DEBUG
   // Serial.println("Save Mode...");
@@ -155,7 +179,7 @@ void sleeping(void)
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   sleep_enable();
 
-  WDT_On(); // Enable watchdog
+  WDT_On(duration); // Enable watchdog
 
   interrupts();
 
